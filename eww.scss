@@ -1,0 +1,226 @@
+* {
+  all: unset;
+  font-family: "JetBrainsMono Nerd Font";
+}
+
+// Tokyo Night colors
+$bg: #1a1b26;
+$bg-alt: #24283b;
+$fg: #a9b1d6;
+$fg-alt: #7aa2f7;
+$red: #f7768e;
+$green: #73daca;
+$yellow: #e0af68;
+$blue: #7aa2f7;
+$magenta: #bb9af7;
+$cyan: #7dcfff;
+$disabled: #565f89;
+
+.bar-container {
+  background-color: transparent;
+  padding: 5px 20px;
+}
+
+.bar {
+  //background-color: $bg;
+  background-color: rgba(26,27,38, 1);
+  padding: 3px 0px;
+  margin: 0;
+}
+
+.separator {
+  color: $disabled;
+  font-size: 18px;
+  margin-top: -4px;
+}
+
+.workspaces {
+  margin-right: 5px;
+  margin-left: 5px;
+  font-size: 16px;
+  
+  .workspace-btn {
+    padding: 0 8px;
+    color: $fg;
+    background-color: $bg-alt;
+    border-radius: 5px;
+
+    &.focused {
+      background: $blue;
+      color: $bg;
+    }
+    
+    &:hover {
+      background-color: $magenta;
+      color: $bg;
+    }
+  }
+}
+
+.dock {
+  margin-right: -3px;
+  margin-left: -3px;
+
+  .dock-btn {
+    padding: 0 3px;
+    color: $disabled;
+    border-radius: 5px;
+
+    label {
+      font-family: "Font Awesome 6 Free Solid";
+      font-size: 16px;
+    }
+
+    &.running {
+      color: $blue;
+    }
+
+    &.focused {
+      color: $magenta;
+    }
+
+    &.hovered {
+      color: $magenta;
+    }
+  }
+}
+
+.launchers, .secondary-launchers {
+  .launcher-btn, .secondary-launcher-btn {
+    padding: 0 8px;
+    color: $fg;
+    transition: all 0.3s ease;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+   
+    label {
+      font-family: "Font Awesome 6 Free Solid";
+      font-size: 16px;
+    }
+
+    &:hover {
+      color: $magenta;
+    }
+  }
+}
+
+.clock {
+  font-size: 16px;
+  color: $fg;
+
+  .date {
+    margin-left: 5px;
+  }
+}
+
+.music-player {
+  font-size: 16px;
+  color: $blue;
+
+  .music-btn {
+    padding: 0 5px;
+    color: $blue;
+
+    label {
+      font-family: "Font Awesome 6 Free Solid";
+    }
+
+    &:hover {
+      color: $cyan;
+    }
+  }
+
+  .music-title {
+    font-size: 16px;
+    color: $fg;
+    margin-left: 5px;
+  }
+}
+
+.weather {
+  font-size: 16px;
+
+  label {
+    font-family: "Weather Icons";
+  }
+}
+
+.battery {
+  font-size: 16px;
+  color: $fg;
+
+  .battery-icon {
+    label {
+      font-family: "Font Awesome 6 Free Solid";
+    }
+  }
+}
+
+.volume {
+  font-size: 16px;
+  color: $fg;
+
+  .volume-icon, .volume-button, .volume-percentage {
+    &.muted {
+      color: $disabled;
+    }
+  }
+
+  .volume-icon {
+    margin-right: 5px;
+
+    label {
+      font-family: "Font Awesome 6 Free Solid";
+    }
+  }
+}
+
+.volume-slider {
+  margin: 0 10px;
+  min-width: 80px;
+
+  trough {
+    background-color: $bg-alt;
+    border-radius: 5px;
+    min-height: 5px;
+    min-width: 80px;
+  }
+
+  highlight {
+    background-color: $blue;
+    border-radius: 5px;
+  }
+}
+
+.systray {
+  label {
+    font-size: 16px;
+  }
+}
+
+.custom-tray button {
+  color: $fg;
+
+  &:hover {
+    color: $magenta;
+  }
+}
+
+.power-icon {
+  margin-right: 10px;
+
+  label {
+    font-family: "Font Awesome 6 Free Solid";
+    font-size: 16px;
+  }
+}
+
+.power-menu {
+  margin-right: 10px;
+}

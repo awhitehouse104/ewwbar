@@ -1,0 +1,178 @@
+(defvar dock_hover -1)
+(defvar show_date false)
+(defvar power_reveal false)
+(defvar show_volume_slider false)
+
+(defpoll dock_info :interval "1s"
+  "~/.config/eww/scripts/dock.sh get_info")
+
+(defpoll time :interval "1s"
+  `date +'{"hour":"%I","min":"%M","ampm":"%p"}'`)
+
+(defpoll date :interval "1m"
+  `date +'{"day":"%d","month":"%m","year":"%Y","full":"%A, %B %d, %Y"}'`)
+
+(defpoll active_workspace :interval "250ms"
+  `hyprctl activeworkspace -j | jq '.id'`)
+
+(defpoll volume :interval "1s"
+  "pamixer --get-volume")
+
+(defpoll volume_icon :interval "1s"
+  "scripts/get-volume-icon.sh")
+
+(defpoll is_muted :interval "1s"
+  "pamixer --get-mute")
+
+(defpoll battery :interval "10s"
+  "~/.config/eww/scripts/battery.sh")
+
+(defpoll weather :interval "600s"
+  "~/.config/eww/scripts/openweathermap.sh")
+
+(defpoll music :interval "1s"
+  "~/.config/eww/scripts/music-player.sh")
+
+(defwidget bar []
+  (box :class "bar-container"
+    (centerbox :orientation "h" :class "bar"
+      (left)
+      (music-player)
+      (right))))
+
+(defwidget left []
+  (box :orientation "h" :space-evenly false :halign "start" :spacing 15
+    (workspaces)
+    (dock)
+    (separator)
+    (secondary-launchers)))
+
+(defwidget right []
+  (box :orientation "h" :space-evenly false :halign "end" :spacing 15
+    (clock)
+    (openweathermap)
+    (separator)
+    (battery)
+    (volume)
+    (separator)
+    (systray :icon-size 16 :spacing 5 :class "systray")
+    (separator)
+    (custom_tray)))
+
+(defwidget separator []
+  (box :class "separator" :orientation "h" :space-evenly false :halign "center"
+    (label :text "|")))
+
+(defwidget workspaces []
+  (box :class "workspaces" :orientation "h" :space-evenly false :halign "start" :spacing 5
+    (button :class "workspace-btn ${active_workspace == 1 ? "focused" : ""}"
+            :onclick "hyprctl dispatch workspace 1" "1")
+    (button :class "workspace-btn ${active_workspace == 2 ? "focused" : ""}"
+            :onclick "hyprctl dispatch workspace 2" "2")
+    (button :class "workspace-btn ${active_workspace == 3 ? "focused" : ""}"
+            :onclick "hyprctl dispatch workspace 3" "3")
+    (button :class "workspace-btn ${active_workspace == 4 ? "focused" : ""}"
+            :onclick "hyprctl dispatch workspace 4" "4")
+    (button :class "workspace-btn ${active_workspace == 5 ? "focused" : ""}"
+            :onclick "hyprctl dispatch workspace 5" "5")))
+
+(defwidget dock []
+  (box :class "dock"
+       :space-evenly false
+       :spacing 10
+    (for app in dock_info
+      (eventbox :onhover "${EWW_CMD} update dock_hover=${app.index}"
+                :onhoverlost "${EWW_CMD} update dock_hover=-1"
+        (button :class "dock-btn ${app.focused == "true" ? "focused" : app.count > 0 ? "running" : "inactive"} ${dock_hover == app.index ? "hovered" : ""}"
+                :onclick "~/.config/eww/scripts/dock.sh ${app.count > 0 ? "focus" : "launch"} ${app.index} && ${EWW_CMD} update dock_info=\"$(~/.config/eww/scripts/dock.sh get_info)\""
+                :onrightclick "~/.config/eww/scripts/dock.sh launch ${app.index} && ${EWW_CMD} update dock_info=\"$(~/.config/eww/scripts/dock.sh get_info)\""
+          (box :orientation "h"
+               :space-evenly false
+            (label :text "${app.icon}")
+          )
+        )
+      )
+    )
+  )
+)
+
+(defwidget launchers []
+  (box :class "launchers" :orientation "h" :space-evenly false :halign "start" :spacing 0
+    (button :class "launcher-btn" :onclick "firefox &" "")
+    (button :class "launcher-btn" :onclick "kitty &" "")
+    (button :class "launcher-btn" :onclick "thunar &" "")
+    (button :class "launcher-btn" :onclick "flatpak run md.obsidian.Obsidian &" "")
+    (button :class "launcher-btn" :onclick "flatpak run com.spotify.Client &" "")))
+
+(defwidget secondary-launchers []
+  (box :class "secondary-launchers" :orientation "h" :space-evenly false :halign "start" :spacing 0
+    (button :class "secondary-launcher-btn" :onclick "fuzzel &" "")))
+
+(defwidget clock []
+  (eventbox :onhover "${EWW_CMD} update show_date=true"
+            :onhoverlost "${EWW_CMD} update show_date=false"
+    (box :class "clock" :orientation "h" :space-evenly false :halign "center"
+      (label :text "${time.hour}:${time.min} ${time.ampm}" :class "time")
+      (revealer :transition "slideright" :reveal show_date :duration "300ms"
+        (label :text "- ${date.full}" :class "date")))))
+
+(defwidget music-player []
+  (box :class "music-player" :space-evenly false :spacing 5
+    (button :class "music-btn previous" :onclick "playerctl previous" "")
+    (button :class "music-btn play-pause" :onclick "playerctl play-pause" {music.icon})
+    (button :class "music-btn next" :onclick "playerctl next" "")
+    (label :class "music-title" :text {music.title} :limit-width 30)))
+
+(defwidget openweathermap []
+  (eventbox :onclick "~/.config/eww/scripts/openweathermap.sh open"
+    (box :class "weather" :space-evenly false
+      (label :text "${weather.icon} ${weather.temp}" :style "color: ${weather.color}"))))
+
+(defwidget battery []
+  (box :class "battery" :space-evenly false :spacing 5
+    (label :text {battery.icon} :style "color: ${battery.color}" :class "battery-icon")
+    (label :text "${battery.percentage}%" :style "color: ${battery.color}" :class "battery-percentage")))
+
+(defwidget volume []
+  (eventbox :onhover "${EWW_CMD} update show_volume_slider=true"
+            :onhoverlost "${EWW_CMD} update show_volume_slider=false"
+    (box :class "volume" :space-evenly false
+      (revealer :transition "slideleft"
+                :reveal {show_volume_slider && is_muted != 'true'}
+                :duration "300ms"
+        (scale :class "volume-slider"
+               :value volume
+               :orientation "h"
+               :tooltip "${volume}%"
+               :max 100
+               :min 0
+               :onchange "pamixer --set-volume {}"))
+      (button :onclick "pamixer -t"
+              :class "volume-icon ${is_muted == 'true' ? 'muted' : ''}"
+              "${volume_icon}")
+      (button :onclick "pamixer -t"
+              :class "volume-percentage ${is_muted == 'true' ? 'muted' : ''}"
+              "${is_muted == 'true' ? 'Muted' : volume + '%'}"))))
+
+(defwidget custom_tray []
+  (box :class "custom-tray" :orientation "h" :space-evenly false :halign "end"
+    (eventbox :onhover "${EWW_CMD} update power_reveal=true"
+              :onhoverlost "${EWW_CMD} update power_reveal=false"
+      (box :orientation "h" :space-evenly false
+        (revealer :transition "slideright" :reveal power_reveal :duration "350ms"
+          (box :class "power-menu"
+            (button :class "power-menu-btn" :onclick "hyprctl dispatch exit" "Logout")
+            (button :class "power-menu-btn" :onclick "systemctl reboot" "Restart")
+            (button :class "power-menu-btn" :onclick "systemctl poweroff" "Shutdown")))
+        (button :class "power-icon" "⏻")))))
+
+(defwindow bar
+  :monitor 0
+  :geometry (geometry :x "0"
+                      :y "0"
+                      :width "1920px"
+                      :height "36px"
+                      :anchor "top center")
+  :stacking "fg"
+  :exclusive true
+  (bar))
